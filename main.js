@@ -2,28 +2,62 @@
 
 // src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&region=JP&language=ja&callback=initMap">
 
-let gMap;
+// Note: This example requires that you consent to location sharing when
+// prompted by your browser. If you see the error "The Geolocation service
+// failed.", it means you probably did not give permission for the browser to
+// locate you.
+
+let map, infoWindow;
 
 function initMap() {
-  gMap = new google.maps.Map(document.getElementById("map"));
-  navigator.geolocation.getCurrentPosition(
-    function (position) {
-      // Center on user's current location if geolocation prompt allowed
-      var initialLocation = new google.maps.LatLng(
-        position.coords.latitude,
-        position.coords.longitude
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: -34.397, lng: 150.644 },
+    zoom: 6,
+  });
+  infoWindow = new google.maps.InfoWindow();
+
+  const locationButton = document.createElement("button");
+
+  locationButton.textContent = "Pan to Current Location";
+  locationButton.classList.add("custom-map-control-button");
+  map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+  locationButton.addEventListener("click", () => {
+    // Try HTML5 geolocation.
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          console.log(`Device Latitude: ${position.coords.latitude}`);
+          console.log(`Device Longitude: ${position.coords.longitude}`);
+
+          infoWindow.setPosition(pos);
+          infoWindow.setContent("Location found.");
+          infoWindow.open(map);
+          map.setCenter(pos);
+        },
+        () => {
+          handleLocationError(true, infoWindow, map.getCenter());
+        }
       );
-      gMap.setCenter(initialLocation);
-      gMap.setZoom(13);
-    },
-    function (positionError) {
-      // User denied geolocation prompt - default to Philadelphia
-      map.setCenter(
-        new google.maps.LatLng(39.96533936576329, -75.18061828075426)
-      );
-      gMap.setZoom(5);
+    } else {
+      // Browser doesn't support Geolocation
+      handleLocationError(false, infoWindow, map.getCenter());
     }
+  });
+}
+
+function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+  infoWindow.setPosition(pos);
+  infoWindow.setContent(
+    browserHasGeolocation
+      ? "Error: The Geolocation service failed."
+      : "Error: Your browser doesn't support geolocation."
   );
+  infoWindow.open(map);
 }
 
 window.initMap = initMap;
