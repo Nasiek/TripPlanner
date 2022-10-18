@@ -138,7 +138,7 @@ function initialize(lat,lng) {
 
   // Perform a nearby search.
   service.nearbySearch(
-    { location: pyrmont, radius: 500, type: "school" },
+    { location: pyrmont, radius: 500, type: prompt("Enter your interest") },
     (results, status, pagination) => {
       if (status !== "OK" || !results) return;
 
